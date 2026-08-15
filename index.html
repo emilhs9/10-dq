@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/emilhs9/Cosmic-BG@main/cosmicbg.js" defer></script>
     <style>
         body {
             margin: 0;
@@ -42,7 +43,7 @@
             margin-top: 6px;
         }
         .form-group {
-            display: flex;
+            display: flex; 
             flex-wrap: wrap;
             gap: 12px;
             margin-bottom: 24px;
@@ -114,8 +115,28 @@
             color: #4b5563;
         }
         th:first-child, td:first-child,
+        th:nth-child(4), td:nth-child(4),
         th:last-child, td:last-child {
             text-align: center;
+        }
+        .qty-btn {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 0 5px;
+            font-size: 14px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .qty-btn:hover {
+            background: #e5e7eb;
         }
         .delete-btn {
             background: none;
@@ -193,7 +214,7 @@
             let cedvel = document.getElementById("cedvel");
             let cem = qiymet * say;
             let saygac = cedvel.rows.length + 1;
-            let setir = "<tr><td>" + saygac + "</td><td>" + ad + "</td><td>" + qiymet + " AZN</td><td>" + say + "</td><td>" + cem + " AZN</td><td><button class='delete-btn' onclick='sil(this)'>🗑️</button></td></tr>";
+            let setir = "<tr><td>" + saygac + "</td><td>" + ad + "</td><td>" + qiymet + " AZN</td><td><button class='qty-btn' onclick='deyis(this, -1)'>-</button><span>" + say + "</span><button class='qty-btn' onclick='deyis(this, 1)'>+</button></td><td>" + cem + " AZN</td><td><button class='delete-btn' onclick='sil(this)'>🗑️</button></td></tr>";
             cedvel.innerHTML += setir;
             document.getElementById("ad").value = "";
             document.getElementById("qiymet").value = "";
@@ -216,6 +237,28 @@
                 let xanalar = trler[i].getElementsByTagName("td");
                 xanalar[0].innerText = i + 1;
                 let setirCem = parseFloat(xanalar[4].innerText);
+                umumi += setirCem;
+            }
+            document.getElementById("umumi").innerText = umumi;
+        }
+
+        function deyis(btn, ferq) {
+            let setir = btn.parentElement.parentElement;
+            let xanalar = setir.getElementsByTagName("td");
+            let qiymet = parseFloat(xanalar[2].innerText);
+            let say = parseInt(xanalar[3].querySelector("span").innerText);
+            let yeniSay = say + ferq;
+            if (yeniSay < 1) {
+                return;
+            }
+            xanalar[3].querySelector("span").innerText = yeniSay;
+            let cem = qiymet * yeniSay;
+            xanalar[4].innerText = cem + " AZN";
+            
+            let trler = document.querySelectorAll("#cedvel tr");
+            let umumi = 0;
+            for (let i = 0; i < trler.length; i++) {
+                let setirCem = parseFloat(trler[i].getElementsByTagName("td")[4].innerText);
                 umumi += setirCem;
             }
             document.getElementById("umumi").innerText = umumi;
