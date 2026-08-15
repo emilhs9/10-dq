@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1c0e35 0%, #3e1b75 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 650px;
+            padding: 30px;
+            box-sizing: border-box;
+            margin: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        h1 {
+            margin: 0;
+            color: #2e124d;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .subtitle {
+            color: #6b7280;
+            font-size: 14px;
+            margin-top: 6px;
+        }
+        .form-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .input-box {
+            flex: 2 1 180px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .input-box.small {
+            flex: 1 1 100px;
+        }
+        label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        input {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+        .add-btn {
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            align-self: flex-end;
+            height: 38px;
+            transition: background 0.2s;
+        }
+        .add-btn:hover {
+            background: #4f46e5;
+        }
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 14px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th {
+            font-weight: 600;
+            color: #374151;
+            background-color: #f9fafb;
+        }
+        td {
+            color: #4b5563;
+        }
+        th:first-child, td:first-child,
+        th:last-child, td:last-child {
+            text-align: center;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .delete-btn:hover {
+            background-color: #fee2e2;
+        }
+        .total-container {
+            text-align: right;
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            <h1>🛒 Shopping Cart</h1>
+            <div class="subtitle">Manage your shopping items easily</div>
+        </div>
+        
+        <div class="form-group">
+            <div class="input-box">
+                <label for="ad">Product name</label>
+                <input type="text" id="ad" placeholder="Enter product name">
+            </div>
+            <div class="input-box small">
+                <label for="qiymet">Price</label>
+                <input type="number" id="qiymet" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="input-box small">
+                <label for="say">Quantity</label>
+                <input type="number" id="say" placeholder="1" min="1" value="1">
+            </div>
+            <button class="add-btn" onclick="elave()">➕ Add</button>
+        </div>
+
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Qty</th>
+                        <th>Total</th>
+                        <th>🗑️</th>
+                    </tr>
+                </thead>
+                <tbody id="cedvel"></tbody>
+            </table>
+        </div>
+
+        <div class="total-container">
+            Total: <span id="umumi">0</span> AZN
+        </div>
+    </div>
+
+    <script>
+        function elave() {
+            let ad = document.getElementById("ad").value;
+            let qiymet = document.getElementById("qiymet").value;
+            let say = document.getElementById("say").value;
+            if (ad == "" || qiymet == "" || say == "") {
+                return;
+            }
+            let cedvel = document.getElementById("cedvel");
+            let cem = qiymet * say;
+            let saygac = cedvel.rows.length + 1;
+            let setir = "<tr><td>" + saygac + "</td><td>" + ad + "</td><td>" + qiymet + " AZN</td><td>" + say + "</td><td>" + cem + " AZN</td><td><button class='delete-btn' onclick='sil(this)'>🗑️</button></td></tr>";
+            cedvel.innerHTML += setir;
+            document.getElementById("ad").value = "";
+            document.getElementById("qiymet").value = "";
+            document.getElementById("say").value = "";
+            
+            let trler = document.querySelectorAll("#cedvel tr");
+            let umumi = 0;
+            for (let i = 0; i < trler.length; i++) {
+                let setirCem = parseFloat(trler[i].getElementsByTagName("td")[4].innerText);
+                umumi += setirCem;
+            }
+            document.getElementById("umumi").innerText = umumi;
+        }
+
+        function sil(btn) {
+            btn.parentElement.parentElement.remove();
+            let trler = document.querySelectorAll("#cedvel tr");
+            let umumi = 0;
+            for (let i = 0; i < trler.length; i++) {
+                let xanalar = trler[i].getElementsByTagName("td");
+                xanalar[0].innerText = i + 1;
+                let setirCem = parseFloat(xanalar[4].innerText);
+                umumi += setirCem;
+            }
+            document.getElementById("umumi").innerText = umumi;
+        }
+    </script>
+</body>
+</html>
