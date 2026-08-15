@@ -186,6 +186,32 @@
         .delete-btn:hover {
             background-color: #fee2e2;
         }
+        .edit-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            margin-right: 6px;
+        }
+        .edit-btn:hover {
+            background-color: #e0e7ff;
+        }
+        .table-input {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .table-input:focus {
+            border-color: #6366f1;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+        }
         .total-container {
             text-align: right;
             font-size: 18px;
@@ -243,7 +269,7 @@
                         <th>Price</th>
                         <th>Qty</th>
                         <th>Total</th>
-                        <th>🗑️</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="cedvel"></tbody>
@@ -264,8 +290,30 @@
             }, 500);
         };
 
+        function yenileUmumi() {
+            let trler = document.querySelectorAll("#cedvel tr");
+            let umumi = 0;
+            for (let i = 0; i < trler.length; i++) {
+                let xanalar = trler[i].getElementsByTagName("td");
+                xanalar[0].innerText = i + 1;
+                
+                let setirCem = 0;
+                let priceInput = trler[i].querySelector('.edit-price-input');
+                if (priceInput) {
+                    let qiymet = parseFloat(priceInput.value) || 0;
+                    let say = parseInt(xanalar[3].querySelector("span").innerText) || 0;
+                    setirCem = qiymet * say;
+                    xanalar[4].innerText = setirCem + " AZN";
+                } else {
+                    setirCem = parseFloat(xanalar[4].innerText) || 0;
+                }
+                umumi += setirCem;
+            }
+            document.getElementById("umumi").innerText = umumi;
+        }
+
         function elave() {
-            let ad = document.getElementById("ad").value;
+            let ad = document.getElementById("ad").value.trim();
             let qiymet = document.getElementById("qiymet").value;
             let say = document.getElementById("say").value;
             if (ad == "" || qiymet == "" || say == "") {
@@ -274,55 +322,142 @@
             let cedvel = document.getElementById("cedvel");
             let cem = qiymet * say;
             let saygac = cedvel.rows.length + 1;
-            let setir = "<tr><td>" + saygac + "</td><td>" + ad + "</td><td>" + qiymet + " AZN</td><td class='qty-cell'><button class='qty-btn' onclick='deyis(this, -1)'>-</button><span>" + say + "</span><button class='qty-btn' onclick='deyis(this, 1)'>+</button></td><td>" + cem + " AZN</td><td><button class='delete-btn' onclick='sil(this)'>🗑️</button></td></tr>";
+            let setir = "<tr><td>" + saygac + "</td><td>" + ad + "</td><td>" + qiymet + " AZN</td><td class='qty-cell'><span>" + say + "</span></td><td>" + cem + " AZN</td><td><button class='edit-btn' onclick='editMode(this)'>✎</button><button class='delete-btn' onclick='sil(this)'>🗑️</button></td></tr>";
             cedvel.innerHTML += setir;
             document.getElementById("ad").value = "";
             document.getElementById("qiymet").value = "";
             document.getElementById("say").value = "";
             
-            let trler = document.querySelectorAll("#cedvel tr");
-            let umumi = 0;
-            for (let i = 0; i < trler.length; i++) {
-                let setirCem = parseFloat(trler[i].getElementsByTagName("td")[4].innerText);
-                umumi += setirCem;
-            }
-            document.getElementById("umumi").innerText = umumi;
+            yenileUmumi();
         }
 
         function sil(btn) {
             btn.parentElement.parentElement.remove();
-            let trler = document.querySelectorAll("#cedvel tr");
-            let umumi = 0;
-            for (let i = 0; i < trler.length; i++) {
-                let xanalar = trler[i].getElementsByTagName("td");
-                xanalar[0].innerText = i + 1;
-                let setirCem = parseFloat(xanalar[4].innerText);
-                umumi += setirCem;
-            }
-            document.getElementById("umumi").innerText = umumi;
+            yenileUmumi();
         }
 
         function deyis(btn, ferq) {
             let setir = btn.parentElement.parentElement;
             let xanalar = setir.getElementsByTagName("td");
-            let qiymet = parseFloat(xanalar[2].innerText);
-            let say = parseInt(xanalar[3].querySelector("span").innerText);
+            
+            let priceInput = setir.querySelector('.edit-price-input');
+            let qiymet = priceInput ? parseFloat(priceInput.value) : parseFloat(xanalar[2].innerText);
+            if (isNaN(qiymet)) qiymet = 0;
+
+            let saySpan = xanalar[3].querySelector("span");
+            let say = parseInt(saySpan.innerText) || 0;
             let yeniSay = say + ferq;
+            
             if (yeniSay < 1) {
-                sil(btn);
                 return;
             }
-            xanalar[3].querySelector("span").innerText = yeniSay;
+            
+            saySpan.innerText = yeniSay;
             let cem = qiymet * yeniSay;
             xanalar[4].innerText = cem + " AZN";
             
-            let trler = document.querySelectorAll("#cedvel tr");
-            let umumi = 0;
-            for (let i = 0; i < trler.length; i++) {
-                let setirCem = parseFloat(trler[i].getElementsByTagName("td")[4].innerText);
-                umumi += setirCem;
+            yenileUmumi();
+        }
+
+        function editMode(btn) {
+            let tr = btn.parentElement.parentElement;
+            let xanalar = tr.getElementsByTagName("td");
+            
+            if (tr.classList.contains('editing')) return;
+            tr.classList.add('editing');
+
+            let oldName = xanalar[1].innerText;
+            let oldPrice = parseFloat(xanalar[2].innerText);
+            let oldQty = parseInt(xanalar[3].querySelector("span").innerText);
+
+            tr.dataset.oldName = oldName;
+            tr.dataset.oldPrice = oldPrice;
+            tr.dataset.oldQty = oldQty;
+
+            xanalar[1].innerHTML = "<input type='text' class='table-input edit-name-input' value='" + oldName.replace(/'/g, "&apos;") + "'>";
+            xanalar[2].innerHTML = "<input type='number' class='table-input edit-price-input' value='" + oldPrice + "' min='0' step='0.01' oninput='updateRowTotal(this)'>";
+            xanalar[3].innerHTML = "<button class='qty-btn' onclick='deyis(this, -1)'>-</button><span>" + oldQty + "</span><button class='qty-btn' onclick='deyis(this, 1)'>+</button>";
+
+            let editBtn = xanalar[5].querySelector('.edit-btn');
+            editBtn.innerText = '✓';
+            editBtn.setAttribute('onclick', 'saveEdit(this)');
+
+            let deleteBtn = xanalar[5].querySelector('.delete-btn');
+            deleteBtn.innerText = '✗';
+            deleteBtn.setAttribute('onclick', 'cancelEdit(this)');
+        }
+
+        function updateRowTotal(input) {
+            let tr = input.parentElement.parentElement;
+            let xanalar = tr.getElementsByTagName("td");
+            let qiymet = parseFloat(input.value) || 0;
+            let say = parseInt(xanalar[3].querySelector("span").innerText) || 0;
+            let cem = qiymet * say;
+            xanalar[4].innerText = cem + " AZN";
+            yenileUmumi();
+        }
+
+        function saveEdit(btn) {
+            let tr = btn.parentElement.parentElement;
+            let xanalar = tr.getElementsByTagName("td");
+
+            let nameInput = tr.querySelector('.edit-name-input');
+            let priceInput = tr.querySelector('.edit-price-input');
+
+            let newName = nameInput.value.trim();
+            let newPrice = parseFloat(priceInput.value);
+
+            if (newName === "") {
+                alert("Product name cannot be empty!");
+                return;
             }
-            document.getElementById("umumi").innerText = umumi;
+            if (isNaN(newPrice) || newPrice < 0) {
+                alert("Please enter a valid price!");
+                return;
+            }
+
+            let newQty = parseInt(xanalar[3].querySelector("span").innerText);
+
+            xanalar[1].innerText = newName;
+            xanalar[2].innerText = newPrice + " AZN";
+            xanalar[3].innerHTML = "<span>" + newQty + "</span>";
+            xanalar[4].innerText = (newPrice * newQty) + " AZN";
+
+            let editBtn = xanalar[5].querySelector('.edit-btn');
+            editBtn.innerText = '✎';
+            editBtn.setAttribute('onclick', 'editMode(this)');
+
+            let deleteBtn = xanalar[5].querySelector('.delete-btn');
+            deleteBtn.innerText = '🗑️';
+            deleteBtn.setAttribute('onclick', 'sil(this)');
+
+            tr.classList.remove('editing');
+            yenileUmumi();
+        }
+
+        function cancelEdit(btn) {
+            let tr = btn.parentElement.parentElement;
+            let xanalar = tr.getElementsByTagName("td");
+
+            let oldName = tr.dataset.oldName;
+            let oldPrice = parseFloat(tr.dataset.oldPrice);
+            let oldQty = parseInt(tr.dataset.oldQty);
+
+            xanalar[1].innerText = oldName;
+            xanalar[2].innerText = oldPrice + " AZN";
+            xanalar[3].innerHTML = "<span>" + oldQty + "</span>";
+            xanalar[4].innerText = (oldPrice * oldQty) + " AZN";
+
+            let editBtn = xanalar[5].querySelector('.edit-btn');
+            editBtn.innerText = '✎';
+            editBtn.setAttribute('onclick', 'editMode(this)');
+
+            let deleteBtn = xanalar[5].querySelector('.delete-btn');
+            deleteBtn.innerText = '🗑️';
+            deleteBtn.setAttribute('onclick', 'sil(this)');
+
+            tr.classList.remove('editing');
+            yenileUmumi();
         }
     </script>
 </body>
